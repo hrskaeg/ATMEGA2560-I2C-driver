@@ -1,0 +1,8 @@
+-target
+avr
+-DF_CPU=16000000UL
+-I
+/usr/avr/include/
+-D__AVR_ATmega2560__
+-x
+c++
