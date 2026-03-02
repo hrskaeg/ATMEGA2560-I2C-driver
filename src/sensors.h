@@ -12,7 +12,7 @@ public:
 class TemperatureSensor : public I2CSensor {
 public:
   TemperatureSensor(I2C &i2c);
-  uint16_t read(); // returns celcius
+  float read(); // returns celcius
 };
 
 class LightSensor : public I2CSensor {

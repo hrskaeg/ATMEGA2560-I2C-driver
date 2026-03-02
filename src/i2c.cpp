@@ -1,6 +1,7 @@
 #include "i2c.h"
 #include <avr/delay.h>
 #include <avr/io.h>
+#include <avr/iom2560.h>
 #include <stdint.h>
 
 #define I2C_START 0x08
@@ -14,43 +15,31 @@
 void I2C::init_I2C(uint32_t clockFreq) {
   TWSR = 0x00;
   TWBR = ((F_CPU / clockFreq) - 16) / 2;
-  TWCR = (1 << TWEN);
 }
 
 void I2C::start() {
   TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
   while (!(TWCR & (1 << TWINT)))
     ;
-  if ((TWSR & 0xF8) != I2C_START)
-    ERROR();
 }
 
-void I2C::write(uint8_t data) {
+void I2C::write(unsigned char data) {
   TWDR = data;
   TWCR = (1 << TWINT) | (1 << TWEN);
   while (!(TWCR & (1 << TWINT)))
     ;
-  if ((TWSR & 0xF8) != I2C_MR_SLA_ACK)
-    ERROR();
 }
 
 void I2C::stop() { TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO); }
 
-uint8_t I2C::read(bool sendAck) {
-  TWCR = (1 << TWINT) | (1 << TWEN) | (sendAck ? (1 << TWEA) : 0);
-  while (!(TWCR & (1 << TWINT)))
-    ;
-  if ((TWSR & 0xF8) != (sendAck ? I2C_MR_DATA_ACK : I2C_MR_DATA_NACK))
-    ERROR();
-  return TWDR;
-}
-
-void I2C::error(uint8_t status) {
-  DDRB |= (1 << PB7); // set PB7 as output
-  while (1) {
-    PORTB |= (1 << PB7); // LED on
-    _delay_ms(200);
-    PORTB &= ~(1 << PB7); // LED off
-    _delay_ms(200);
+unsigned char I2C::read(unsigned char isLast) {
+  // if not last byte to read
+  if (isLast == 0) {
+    TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
+  } else {
+    TWCR = (1 << TWINT) | (1 << TWEN);
   }
+  while ((TWCR & (1 << TWINT)) == 0) {
+  }
+  return TWDR;
 }

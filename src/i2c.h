@@ -6,7 +6,7 @@ public:
   void init_I2C(uint32_t clockFreq);
   void start();
   void stop();
-  void write(uint8_t data);
-  uint8_t read(bool sendAck);
-  void error(uint8_t status);
+  void write(unsigned char data);
+  unsigned char read(unsigned char isLast);
+  void i2c_stop();
 };
